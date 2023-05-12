@@ -14,7 +14,6 @@ const getUser = (req,res) => {
     .orFail(() => {mkError('User not found')})
     .then(user => res.status(200).send({ data: user }))
     .catch(err => {
-      console.log(err)
       if (err.name == 'CastError'){
         res.status(400).send({message: err.message});
       } else {

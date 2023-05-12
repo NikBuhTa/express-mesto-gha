@@ -21,7 +21,6 @@ const createCard = (req, res) => {
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
   .catch(err => {
-    console.log(err)
     if (err.name == 'ValidationError'){
       const message = Object.values(err.errors).map(error => error.message).join('; ');
       res.status(400).send({message});
@@ -57,10 +56,8 @@ const likeCard = (req, res) => {
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
   .catch(err => {
-    console.log(err);
-    if (err.name == 'ValidationError'){
-      const message = Object.values(err.errors).map(error => error.message).join('; ');
-      res.status(400).send({message});
+    if (err.name == 'CastError'){
+      res.status(400).send({message: err.message});
     } else {
       hdlError(res, err, 'Wrond cardId')
     }})
@@ -79,7 +76,7 @@ const dislikeCard = (req, res) => {
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
   .catch(err => {
-    if (err.name == 'ValidationError'){
+    if (err.name == 'CasrError'){
       const message = Object.values(err.errors).map(error => error.message).join('; ');
       res.status(400).send({message});
     } else {
