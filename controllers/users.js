@@ -13,7 +13,14 @@ const getUser = (req,res) => {
   User.findById(id)
     .orFail(() => {mkError('User not found')})
     .then(user => res.status(200).send({ data: user }))
-    .catch(err => {hdlError(res, err, 'User not found')});
+    .catch(err => {
+      if (err.name == 'ValidationError'){
+        const message = Object.values(err.errors).map(error => error.message).join('; ');
+        res.status(400).send({message});
+      } else {
+        hdlError(res, err, 'User not found');
+      }
+    });
 }
 
 const createUser =(req,res) => {
@@ -25,8 +32,9 @@ const createUser =(req,res) => {
       if (err.name == 'ValidationError'){
         const message = Object.values(err.errors).map(error => error.message).join('; ');
         res.status(400).send({message});
+      } else {
+        res.send({message: err.message})
       }
-      res.send({message: err.message})
     });
 }
 
@@ -40,7 +48,14 @@ const updPrf = (req, res) => {
   })
     .orFail(() => {mkError('User not found')})
     .then(user => res.send({ data: user }))
-    .catch(err => {hdlError(res, err, 'User not found')});
+    .catch(err => {
+      if (err.name == 'ValidationError'){
+        const message = Object.values(err.errors).map(error => error.message).join('; ');
+        res.status(400).send({message});
+      } else {
+        hdlError(res, err, 'User not found');
+      }
+    });
 }
 
 const updAvatar = (req, res) => {
@@ -53,7 +68,13 @@ const updAvatar = (req, res) => {
   })
     .orFail(() => {mkError('User not found')})
     .then(user => res.send({ data: user }))
-    .catch(err => {hdlError(res, err, 'User not found')});
+    .catch(err => {
+      if (err.name == 'ValidationError'){
+        const message = Object.values(err.errors).map(error => error.message).join('; ');
+        res.status(400).send({message});
+      } else {
+        hdlError(res, err, 'User not found');
+    }});
 }
 
 module.exports = {

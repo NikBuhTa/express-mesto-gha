@@ -5,7 +5,7 @@ const getCards = (req, res) => {
   Card.find({})
   .orFail(() => {mkError('Cards not found')})
   .populate(['owner', 'likes'])
-  .then(cards => res.status(201).send({ data: cards }))
+  .then(cards => res.status(200).send({ data: cards }))
   .catch(err => {hdlError(res, err, 'Cards not found')});
 }
 
@@ -33,9 +33,15 @@ const createCard = (req, res) => {
 const dltCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId)
-  .orFail(() => {mkError('Wrong cardId or there is no card with such id')})
+  .orFail(() => {mkError('Wrong cardId')})
   .then(card => res.status(200).send({data: card}))
-  .catch(err => {hdlError(res, err, 'Wrong cardId or there is no card with such id')})
+  .catch(err => {
+    if (err.name == 'ValidationError'){
+      const message = Object.values(err.errors).map(error => error.message).join('; ');
+      res.status(400).send({message});
+    } else {
+      hdlError(res, err, 'Wrond cardId')
+    }})
 }
 
 const likeCard = (req, res) => {
@@ -50,7 +56,13 @@ const likeCard = (req, res) => {
   .populate(['owner', 'likes'])
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
-  .catch(err => {hdlError(res, err, 'Wrond cardId')})
+  .catch(err => {
+    if (err.name == 'ValidationError'){
+      const message = Object.values(err.errors).map(error => error.message).join('; ');
+      res.status(400).send({message});
+    } else {
+      hdlError(res, err, 'Wrond cardId')
+    }})
 }
 
 const dislikeCard = (req, res) => {
@@ -65,7 +77,13 @@ const dislikeCard = (req, res) => {
   .populate(['owner', 'likes'])
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
-  .catch(err => {hdlError(res, err, 'Wrond cardId')})
+  .catch(err => {
+    if (err.name == 'ValidationError'){
+      const message = Object.values(err.errors).map(error => error.message).join('; ');
+      res.status(400).send({message});
+    } else {
+      hdlError(res, err, 'Wrond cardId')
+    }})
 }
 
 module.exports = {
