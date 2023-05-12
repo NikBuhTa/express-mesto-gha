@@ -24,7 +24,7 @@ const createCard = (req, res) => {
     console.log(err)
     if (err.name == 'ValidationError'){
       const message = Object.values(err.errors).map(error => error.message).join('; ');
-      res.status(403).send({message});
+      res.status(400).send({message});
     }
     res.status(500).send({message: err.message})
   });

@@ -4,7 +4,7 @@ const { hdlError, mkError } = require('../utils/utils');
 const getUsers = (req,res) => {
   User.find()
     .orFail(() => {mkError('Users not found')})
-    .then(users => res.status(201).send({ data: users }))
+    .then(users => res.status(200).send({ data: users }))
     .catch(err => {hdlError(res, err, 'Users not found')});
 }
 
@@ -12,7 +12,7 @@ const getUser = (req,res) => {
   const { id } = req.params;
   User.findById(id)
     .orFail(() => {mkError('User not found')})
-    .then(user => res.status(201).send({ data: user }))
+    .then(user => res.status(200).send({ data: user }))
     .catch(err => {hdlError(res, err, 'User not found')});
 }
 
@@ -24,7 +24,7 @@ const createUser =(req,res) => {
     .catch(err => {
       if (err.name == 'ValidationError'){
         const message = Object.values(err.errors).map(error => error.message).join('; ');
-        res.status(403).send({message});
+        res.status(400).send({message});
       }
       res.send({message: err.message})
     });
