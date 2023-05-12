@@ -20,7 +20,14 @@ const createCard = (req, res) => {
   })
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
-  .catch(err => res.status(500).send({message: err.message}));
+  .catch(err => {
+    console.log(err)
+    if (err.name == 'ValidationError'){
+      const message = Object.values(err.errors).map(error => error.message).join('; ');
+      res.status(403).send({message});
+    }
+    res.status(500).send({message: err.message})
+  });
 }
 
 const dltCard = (req, res) => {
