@@ -18,6 +18,7 @@ app.use((req, res, next) => {
 })
 app.use(userRouter);
 app.use(cardRouter);
+app.use((req, res) => {res.status(404).send({message: 'Not found'})})
 
 app.listen(3000, () => {
   console.log('Server is up, PORT => ', PORT);

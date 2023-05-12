@@ -76,7 +76,7 @@ const dislikeCard = (req, res) => {
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
   .catch(err => {
-    if (err.name == 'CasrError'){
+    if (err.name == 'CastError'){
       res.status(400).send({message: err.message});
     } else {
       hdlError(res, err, 'Wrong cardId')
