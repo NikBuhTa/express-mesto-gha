@@ -14,9 +14,9 @@ const getUser = (req,res) => {
     .orFail(() => {mkError('User not found')})
     .then(user => res.status(200).send({ data: user }))
     .catch(err => {
-      if (err.name == 'ValidationError'){
-        const message = Object.values(err.errors).map(error => error.message).join('; ');
-        res.status(400).send({message});
+      console.log(err)
+      if (err.name == 'CastError'){
+        res.status(400).send({message: err.message});
       } else {
         hdlError(res, err, 'User not found');
       }

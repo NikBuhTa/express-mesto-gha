@@ -32,7 +32,7 @@ const createCard = (req, res) => {
 
 const dltCard = (req, res) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId)
+  Card.findByIdAndRemove(cardId, {new: true})
   .orFail(() => {mkError('Wrong cardId')})
   .then(card => res.status(200).send({data: card}))
   .catch(err => {
@@ -57,6 +57,7 @@ const likeCard = (req, res) => {
   .then(card => card.populate(['owner', 'likes']))
   .then(card => res.status(200).send({data: card}))
   .catch(err => {
+    console.log(err);
     if (err.name == 'ValidationError'){
       const message = Object.values(err.errors).map(error => error.message).join('; ');
       res.status(400).send({message});
