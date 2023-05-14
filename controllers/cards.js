@@ -18,8 +18,8 @@ const createCard = (req, res) => {
     link,
     owner: id,
   })
-    .then((card) => card.populate(['owner', 'likes']))
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => card.populate(['owner']))
+    .then((card) => res.status(201).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         const message = Object.values(err.errors).map((error) => error.message).join('; ');
@@ -32,13 +32,13 @@ const createCard = (req, res) => {
 const dltCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId, { new: true })
-    .orFail(() => { mkError('Wrong cardId'); })
+    .orFail(() => { mkError('Card not found'); })
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
       } else {
-        hdlError(res, err, 'Wrong cardId');
+        hdlError(res, err, 'Card not found');
       }
     });
 };
@@ -51,7 +51,7 @@ const likeCard = (req, res) => {
     },
     { new: true },
   )
-    .orFail(() => { mkError('Wrong cardId'); })
+    .orFail(() => { mkError('Card not found'); })
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
@@ -59,7 +59,7 @@ const likeCard = (req, res) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
       } else {
-        hdlError(res, err, 'Wrong cardId');
+        hdlError(res, err, 'Card not found');
       }
     });
 };
@@ -72,7 +72,7 @@ const dislikeCard = (req, res) => {
     },
     { new: true },
   )
-    .orFail(() => { mkError('Wrong cardId'); })
+    .orFail(() => { mkError('Card not found'); })
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
@@ -80,7 +80,7 @@ const dislikeCard = (req, res) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
       } else {
-        hdlError(res, err, 'Wrong cardId');
+        hdlError(res, err, 'Card not found');
       }
     });
 };
