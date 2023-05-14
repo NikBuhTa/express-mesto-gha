@@ -3,85 +3,87 @@ const { mkError, hdlError } = require('../utils/utils');
 
 const getCards = (req, res) => {
   Card.find({})
-  .orFail(() => {mkError('Cards not found')})
-  .populate(['owner', 'likes'])
-  .then(cards => res.status(200).send({ data: cards }))
-  .catch(err => {hdlError(res, err, 'Cards not found')});
-}
+    .orFail(() => { mkError('Cards not found'); })
+    .populate(['owner', 'likes'])
+    .then((cards) => res.status(200).send({ data: cards }))
+    .catch((err) => { hdlError(res, err, 'Cards not found'); });
+};
 
 const createCard = (req, res) => {
-  const {name, link} = req.body;
+  const { name, link } = req.body;
   const id = req.user._id;
 
   Card.create({
     name,
     link,
-    owner: id
+    owner: id,
   })
-  .then(card => card.populate(['owner', 'likes']))
-  .then(card => res.status(200).send({data: card}))
-  .catch(err => {
-    if (err.name == 'ValidationError'){
-      const message = Object.values(err.errors).map(error => error.message).join('; ');
-      res.status(400).send({message});
-    }
-    res.status(500).send({message: err.message})
-  });
-}
+    .then((card) => card.populate(['owner', 'likes']))
+    .then((card) => res.status(200).send({ data: card }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        const message = Object.values(err.errors).map((error) => error.message).join('; ');
+        res.status(400).send({ message });
+      }
+      res.status(500).send({ message: err.message });
+    });
+};
 
 const dltCard = (req, res) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId, {new: true})
-  .orFail(() => {mkError('Wrong cardId')})
-  .then(card => res.status(200).send({data: card}))
-  .catch(err => {
-    if (err.name == 'CastError'){
-      res.status(400).send({message: err.message});
-    } else {
-      hdlError(res, err, 'Wrong cardId')
-    }})
-}
+  Card.findByIdAndRemove(cardId, { new: true })
+    .orFail(() => { mkError('Wrong cardId'); })
+    .then((card) => res.status(200).send({ data: card }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: err.message });
+      } else {
+        hdlError(res, err, 'Wrong cardId');
+      }
+    });
+};
 
 const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
-      $addToSet: { likes: req.user._id }
+      $addToSet: { likes: req.user._id },
     },
-    {new: true}
+    { new: true },
   )
-  .orFail(() => {mkError('Wrong cardId')})
-  .populate(['owner', 'likes'])
-  .then(card => card.populate(['owner', 'likes']))
-  .then(card => res.status(200).send({data: card}))
-  .catch(err => {
-    console.log(err.message)
-    if (err.name == 'CastError'){
-      res.status(400).send({message: err.message});
-    } else {
-      hdlError(res, err, 'Wrong cardId')
-    }})
-}
+    .orFail(() => { mkError('Wrong cardId'); })
+    .populate(['owner', 'likes'])
+    .then((card) => card.populate(['owner', 'likes']))
+    .then((card) => res.status(200).send({ data: card }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: err.message });
+      } else {
+        hdlError(res, err, 'Wrong cardId');
+      }
+    });
+};
 
 const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
-      $pull: { likes: req.user._id }
+      $pull: { likes: req.user._id },
     },
-    {new: true}
+    { new: true },
   )
-  .orFail(() => {mkError('Wrong cardId')})
-  .populate(['owner', 'likes'])
-  .then(card => card.populate(['owner', 'likes']))
-  .then(card => res.status(200).send({data: card}))
-  .catch(err => {
-    if (err.name == 'CastError'){
-      res.status(400).send({message: err.message});
-    } else {
-      hdlError(res, err, 'Wrong cardId')
-    }})
-}
+    .orFail(() => { mkError('Wrong cardId'); })
+    .populate(['owner', 'likes'])
+    .then((card) => card.populate(['owner', 'likes']))
+    .then((card) => res.status(200).send({ data: card }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: err.message });
+      } else {
+        hdlError(res, err, 'Wrong cardId');
+      }
+    });
+};
 
 module.exports = {
   getCards,
@@ -89,4 +91,4 @@ module.exports = {
   dltCard,
   likeCard,
   dislikeCard,
-}
+};
