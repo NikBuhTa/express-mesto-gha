@@ -1,4 +1,4 @@
-const hdlError = (res, e, errPhr) => {
+const handleError = (res, e, errPhr) => {
   if (e.message === errPhr) {
     res.status(404).send({ message: errPhr });
   } else {
@@ -14,11 +14,11 @@ const hdlError = (res, e, errPhr) => {
 //   }
 // }
 
-const mkError = (errPhr) => {
+const makeError = (errPhr) => {
   throw new Error(errPhr);
 };
 
 module.exports = {
-  hdlError,
-  mkError,
+  handleError,
+  makeError,
 };

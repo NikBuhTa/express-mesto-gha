@@ -1,12 +1,12 @@
 const Card = require('../models/cards');
-const { mkError, hdlError } = require('../utils/utils');
+const { makeError, handleError } = require('../utils/utils');
 
 const getCards = (req, res) => {
   Card.find({})
-    .orFail(() => { mkError('Cards not found'); })
+    .orFail(() => { makeError('Cards not found'); })
     .populate(['owner', 'likes'])
     .then((cards) => res.status(200).send({ data: cards }))
-    .catch((err) => { hdlError(res, err, 'Cards not found'); });
+    .catch((err) => { handleError(res, err, 'Cards not found'); });
 };
 
 const createCard = (req, res) => {
@@ -29,16 +29,16 @@ const createCard = (req, res) => {
     });
 };
 
-const dltCard = (req, res) => {
+const deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId, { new: true })
-    .orFail(() => { mkError('Card not found'); })
+    .orFail(() => { makeError('Card not found'); })
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
       } else {
-        hdlError(res, err, 'Card not found');
+        handleError(res, err, 'Card not found');
       }
     });
 };
@@ -51,7 +51,7 @@ const likeCard = (req, res) => {
     },
     { new: true },
   )
-    .orFail(() => { mkError('Card not found'); })
+    .orFail(() => { makeError('Card not found'); })
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
@@ -59,7 +59,7 @@ const likeCard = (req, res) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
       } else {
-        hdlError(res, err, 'Card not found');
+        handleError(res, err, 'Card not found');
       }
     });
 };
@@ -72,7 +72,7 @@ const dislikeCard = (req, res) => {
     },
     { new: true },
   )
-    .orFail(() => { mkError('Card not found'); })
+    .orFail(() => { makeError('Card not found'); })
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
@@ -80,7 +80,7 @@ const dislikeCard = (req, res) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
       } else {
-        hdlError(res, err, 'Card not found');
+        handleError(res, err, 'Card not found');
       }
     });
 };
@@ -88,7 +88,7 @@ const dislikeCard = (req, res) => {
 module.exports = {
   getCards,
   createCard,
-  dltCard,
+  deleteCard,
   likeCard,
   dislikeCard,
 };
