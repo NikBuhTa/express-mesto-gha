@@ -1,5 +1,7 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/users');
-const { handleError, makeError } = require('../utils/utils');
+const { handleError, makeError, secretKey } = require('../utils/utils');
 
 const getUsers = (req, res) => {
   User.find()
@@ -9,8 +11,8 @@ const getUsers = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  const { id } = req.params;
-  User.findById(id)
+  const { _id } = req.user;
+  User.findById(_id)
     .orFail(() => { makeError('User not found'); })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
@@ -22,18 +24,33 @@ const getUser = (req, res) => {
     });
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+const getUserInfo = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      res.send({ data: user });
+    })
+    .catch((e) => res.send({ message: e.message }));
+};
 
-  User.create({ name, about, avatar })
-    .then((user) => res.status(201).send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors).map((error) => error.message).join('; ');
-        res.status(400).send({ message });
-      } else {
-        res.send({ message: err.message });
-      }
+const createUser = (req, res) => {
+  const {
+    name = undefined, about = undefined, avatar = undefined, email, password,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        name, about, avatar, email, password: hash,
+      })
+        .then((user) => res.status(201).send({ data: user }))
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            const message = Object.values(err.errors).map((error) => error.message).join('; ');
+            res.status(400).send({ message });
+          } else {
+            res.send({ message: err.message });
+          }
+        });
     });
 };
 
@@ -81,10 +98,29 @@ const updateAvatar = (req, res) => {
     });
 };
 
+// eslint-disable-next-line consistent-return
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findUserByCredentials(email, password);
+    if (user) {
+      const token = jwt.sign({ _id: user._id }, secretKey, { expiresIn: '7d' });
+      return res.cookie('jwt', `${token}`, {
+        httpOnly: true,
+      }).end();
+    }
+    throw new Error('Invalid login or password');
+  } catch (e) {
+    res.send({ message: e.message });
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
   createUser,
   updateProfile,
   updateAvatar,
+  login,
+  getUserInfo,
 };
