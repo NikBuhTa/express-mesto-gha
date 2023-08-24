@@ -1,38 +1,37 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users');
-const { handleError, makeError, secretKey } = require('../utils/utils');
+const { secretKey } = require('../utils/utils');
+const NotFoundError = require('../errors/not-found-error');
+const InvalidDataError = require('../errors/invalid-data-error');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find()
-    .orFail(() => { makeError('Users not found'); })
+    .orFail(() => { throw new NotFoundError('Пользователи не найдены'); })
     .then((users) => res.send({ data: users }))
-    .catch((err) => { handleError(res, err, 'Users not found'); });
+    .catch(next);
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   const { _id } = req.user;
   User.findById(_id)
-    .orFail(() => { makeError('User not found'); })
+    .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        handleError(res, err, 'User not found');
-      }
-    });
+    .catch(next);
 };
 
-const getUserInfo = (req, res) => {
+const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Пользователь не найден');
+      }
       res.send({ data: user });
     })
-    .catch((e) => res.send({ message: e.message }));
+    .catch(next);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name = undefined, about = undefined, avatar = undefined, email, password,
   } = req.body;
@@ -43,18 +42,11 @@ const createUser = (req, res) => {
         name, about, avatar, email, password: hash,
       })
         .then((user) => res.status(201).send({ data: user }))
-        .catch((err) => {
-          if (err.name === 'ValidationError') {
-            const message = Object.values(err.errors).map((error) => error.message).join('; ');
-            res.status(400).send({ message });
-          } else {
-            res.send({ message: err.message });
-          }
-        });
+        .catch(next);
     });
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   const id = req.user._id;
 
@@ -62,21 +54,12 @@ const updateProfile = (req, res) => {
     new: true,
     runValidators: true,
   })
-    .orFail(() => { makeError('User not found'); })
+    .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors).map((error) => error.message).join('; ');
-        res.status(400).send({ message });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        handleError(res, err, 'User not found');
-      }
-    });
+    .catch(next);
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const id = req.user._id;
 
@@ -84,23 +67,15 @@ const updateAvatar = (req, res) => {
     new: true,
     runValidators: true,
   })
-    .orFail(() => { makeError('User not found'); })
+    .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors).map((error) => error.message).join('; ');
-        res.status(400).send({ message });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        handleError(res, err, 'User not found');
-      }
-    });
+    .catch(next);
 };
 
 // eslint-disable-next-line consistent-return
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findUserByCredentials(email, password);
     if (user) {
@@ -109,9 +84,9 @@ const login = async (req, res) => {
         httpOnly: true,
       }).end();
     }
-    throw new Error('Invalid login or password');
+    throw new InvalidDataError('Неправильный логин или пароль');
   } catch (e) {
-    res.send({ message: e.message });
+    next(e);
   }
 };
 

@@ -1,15 +1,16 @@
+const { NotFoundError } = require('../errors/not-found-error');
 const Card = require('../models/cards');
 const { makeError, handleError } = require('../utils/utils');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
-    .orFail(() => { makeError('Cards not found'); })
+    .orFail(() => { throw new NotFoundError('Карточки не найдены'); })
     .populate(['owner', 'likes'])
     .then((cards) => res.status(200).send({ data: cards }))
-    .catch((err) => { handleError(res, err, 'Cards not found'); });
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const id = req.user._id;
 
@@ -20,30 +21,18 @@ const createCard = (req, res) => {
   })
     .then((card) => card.populate(['owner']))
     .then((card) => res.status(201).send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors).map((error) => error.message).join('; ');
-        res.status(400).send({ message });
-      }
-      res.status(500).send({ message: err.message });
-    });
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
-  const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId, { new: true })
-    .orFail(() => { makeError('Card not found'); })
+const deleteCard = (req, res, next) => {
+  const { _id } = req.user;
+  Card.findByIdAndRemove(_id, { new: true })
+    .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
     .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        handleError(res, err, 'Card not found');
-      }
-    });
+    .catch(next);
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
@@ -51,20 +40,14 @@ const likeCard = (req, res) => {
     },
     { new: true },
   )
-    .orFail(() => { makeError('Card not found'); })
+    .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        handleError(res, err, 'Card not found');
-      }
-    });
+    .catch(next);
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
@@ -72,17 +55,11 @@ const dislikeCard = (req, res) => {
     },
     { new: true },
   )
-    .orFail(() => { makeError('Card not found'); })
+    .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        handleError(res, err, 'Card not found');
-      }
-    });
+    .catch(next);
 };
 
 module.exports = {

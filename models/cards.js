@@ -5,8 +5,6 @@ const cardSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'This input must be filled'],
-    minlength: [2, 'Minlength is 2 characters'],
-    maxlength: [30, 'Maxlength is 30 characters'],
   },
   link: {
     type: String,
