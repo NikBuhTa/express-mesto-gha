@@ -2,12 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const { errors, celebrate, Joi } = require('celebrate');
 
 const { PORT = 3000 } = process.env;
 const routes = require('./routes/index');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const { errors, celebrate, Joi } = require('celebrate');
 
 const app = express();
 
@@ -32,9 +32,9 @@ app.post('/signup', celebrate({
 
 app.use(auth);
 app.use(routes);
-// eslint-disable-next-line no-unused-vars
 app.use(errors());
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   res.status(err.statusCode).send({ message: err.message });
 });

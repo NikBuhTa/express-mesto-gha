@@ -1,5 +1,5 @@
-const express = require('express');
 const { Joi, celebrate } = require('celebrate');
+const express = require('express');
 const {
   getUsers, getUser, updateProfile, updateAvatar, getUserInfo,
 } = require('../controllers/users');
