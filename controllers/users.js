@@ -3,14 +3,13 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/users');
 const { secretKey } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found-error');
-const InvalidDataError = require('../errors/invalid-data-error');
 const { BadRequestError } = require('../errors/bad-request-error');
 const { DataConflictError } = require('../errors/data-conflict-error');
 
 const getUsers = (req, res, next) => {
   User.find()
     .orFail(() => { throw new NotFoundError('Пользователи не найдены'); })
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.status(200).send({ data: users }))
     .catch(next);
 };
 
@@ -71,7 +70,7 @@ const updateProfile = (req, res, next) => {
     runValidators: true,
   })
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.satuts(200).send({ data: user }))
     .catch(next);
 };
 
@@ -84,7 +83,7 @@ const updateAvatar = (req, res, next) => {
     runValidators: true,
   })
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch(next);
 };
 

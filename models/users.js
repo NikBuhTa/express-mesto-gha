@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false,
   },
-}, { versionKey: false });
+}, { versionKey: false, toJSON: { useProjection: true }, toObject: { useProjection: true } });
 
 userSchema.post('save', (doc) => {
   const docObj = doc.toObject();
