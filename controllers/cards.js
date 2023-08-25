@@ -1,4 +1,5 @@
 const { AccessDeniedError } = require('../errors/access-denied-error');
+const { BadRequestError } = require('../errors/bad-request-error');
 const { NotFoundError } = require('../errors/not-found-error');
 const Card = require('../models/cards');
 
@@ -7,7 +8,12 @@ const getCards = (req, res, next) => {
     .orFail(() => { throw new NotFoundError('Карточки не найдены'); })
     .populate(['owner', 'likes'])
     .then((cards) => res.status(200).send({ data: cards }))
-    .catch(next);
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError('Неправильный запрос'));
+      }
+      next(e);
+    });
 };
 
 const createCard = (req, res, next) => {
@@ -21,7 +27,12 @@ const createCard = (req, res, next) => {
   })
     .then((card) => card.populate(['owner']))
     .then((card) => res.status(201).send({ data: card }))
-    .catch(next);
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError('Неправильный запрос'));
+      }
+      next(e);
+    });
 };
 
 const deleteCard = (req, res, next) => {
@@ -38,7 +49,12 @@ const deleteCard = (req, res, next) => {
         .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
         .then((card) => res.status(200).send({ data: card }));
     })
-    .catch(next);
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError('Неправильный запрос'));
+      }
+      next(e);
+    });
 };
 //     });
 // };
@@ -55,7 +71,12 @@ const likeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
-    .catch(next);
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError('Неправильный запрос'));
+      }
+      next(e);
+    });
 };
 
 const dislikeCard = (req, res, next) => {
@@ -70,7 +91,12 @@ const dislikeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .then((card) => card.populate(['owner', 'likes']))
     .then((card) => res.status(200).send({ data: card }))
-    .catch(next);
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError('Неправильный запрос'));
+      }
+      next(e);
+    });
 };
 
 module.exports = {
