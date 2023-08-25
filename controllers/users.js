@@ -14,6 +14,7 @@ const getUsers = (req, res, next) => {
 };
 
 const getUser = (req, res, next) => {
+  console.log(req.params);
   const { _id } = req.user;
   User.findById(_id)
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
@@ -95,10 +96,9 @@ const login = async (req, res, next) => {
     const user = await User.findUserByCredentials(email, password);
     if (user) {
       const token = jwt.sign({ _id: user._id }, secretKey, { expiresIn: '7d' });
-      res.status(200).send({ message: 'Успешно!' });
       return res.cookie('jwt', `${token}`, {
         httpOnly: true,
-      }).end();
+      }).status(200).send({ message: 'Успешно!' }).end();
     }
   } catch (e) {
     next(e);

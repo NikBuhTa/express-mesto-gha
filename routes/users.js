@@ -9,7 +9,7 @@ const userRouter = express.Router();
 userRouter.get('/users', getUsers);
 userRouter.get('/users/:id', celebrate({
   params: Joi.object().keys({
-    _id: Joi.string().required().hex().length(24),
+    id: Joi.string().required().hex().length(24),
   }),
 }), getUser);
 userRouter.patch('/users/me', celebrate({
