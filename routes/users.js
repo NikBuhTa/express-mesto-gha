@@ -7,13 +7,8 @@ const { RegExp } = require('../utils/constants');
 
 const userRouter = express.Router();
 
-userRouter.get('/users', getUsers);
-userRouter.get('/users/:id', celebrate({
-  params: Joi.object().keys({
-    id: Joi.string().required().hex().length(24),
-  }),
-}), getUser);
 userRouter.get('/users/me', getUserInfo);
+userRouter.get('/users', getUsers);
 userRouter.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
@@ -25,4 +20,9 @@ userRouter.patch('/users/me/avatar', celebrate({
     avatar: Joi.string().required().regex(RegExp),
   }),
 }), updateAvatar);
+userRouter.get('/users/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().required().hex().length(24),
+  }),
+}), getUser);
 module.exports = userRouter;
