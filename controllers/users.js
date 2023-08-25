@@ -5,6 +5,7 @@ const { secretKey } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found-error');
 const InvalidDataError = require('../errors/invalid-data-error');
 const { BadRequestError } = require('../errors/bad-request-error');
+const { DataConflictError } = require('../errors/data-conflict-error');
 
 const getUsers = (req, res, next) => {
   User.find()
@@ -17,7 +18,7 @@ const getUser = (req, res, next) => {
   const { _id } = req.user;
   User.findById(_id)
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
-    .then((user) => res.status(201).send({ data: user }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Плохой запрос'));
@@ -33,7 +34,7 @@ const getUserInfo = (req, res, next) => {
       if (!user) {
         throw new NotFoundError('Пользователь не найден');
       }
-      res.send({ data: user });
+      res.status(200).send({ data: user });
     })
     .catch(next);
 };
@@ -48,8 +49,16 @@ const createUser = (req, res, next) => {
       User.create({
         name, about, avatar, email, password: hash,
       })
-        .then((user) => res.status(201).send({ data: user }))
-        .catch(next);
+        .then((user) => {
+          res.status(201).send({ data: user });
+        })
+        .catch((e) => {
+          if (e.code === 11000) {
+            next(new DataConflictError('Пользователь с таким email уже существует'));
+            return;
+          }
+          next(e);
+        });
     });
 };
 
@@ -87,11 +96,11 @@ const login = async (req, res, next) => {
     const user = await User.findUserByCredentials(email, password);
     if (user) {
       const token = jwt.sign({ _id: user._id }, secretKey, { expiresIn: '7d' });
+      res.status(200).send({ message: 'Успешно!' });
       return res.cookie('jwt', `${token}`, {
         httpOnly: true,
       }).end();
     }
-    throw new InvalidDataError('Неправильный логин или пароль');
   } catch (e) {
     next(e);
   }

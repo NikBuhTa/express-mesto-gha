@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require('validator');
+const InvalidDataError = require('../errors/invalid-data-error');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -35,16 +36,23 @@ const userSchema = new mongoose.Schema({
   },
 }, { versionKey: false });
 
+userSchema.post('save', (doc) => {
+  const docObj = doc.toObject();
+  // eslint-disable-next-line dot-notation
+  delete docObj['password'];
+  return docObj;
+});
+
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Invalid login or password'));
+        throw new InvalidDataError('Неправильный email или пароль');
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Invalid login or password'));
+            throw new InvalidDataError('Неправильный email или пароль');
           }
           return user;
         });

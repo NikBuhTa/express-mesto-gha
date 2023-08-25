@@ -7,7 +7,11 @@ const {
 const userRouter = express.Router();
 
 userRouter.get('/users', getUsers);
-userRouter.get('/users/:id', getUser);
+userRouter.get('/users/:id', celebrate({
+  params: Joi.object().keys({
+    _id: Joi.string().required().hex().length(24),
+  }),
+}), getUser);
 userRouter.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
