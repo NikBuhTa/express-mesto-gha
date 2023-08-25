@@ -37,8 +37,8 @@ const deleteCard = (req, res, next) => {
       Card.findByIdAndRemove(id, { new: true })
         .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
         .then((card) => res.status(200).send({ data: card }))
-        .catch(next);
-    });
+    })
+    .catch(next);
 };
 //     });
 // };
