@@ -1,9 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users');
-const { secretKey } = require('../utils/utils');
+const { secretKey } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found-error');
 const InvalidDataError = require('../errors/invalid-data-error');
+const { BadRequestError } = require('../errors/bad-request-error');
 
 const getUsers = (req, res, next) => {
   User.find()
@@ -16,8 +17,14 @@ const getUser = (req, res, next) => {
   const { _id } = req.user;
   User.findById(_id)
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
-    .then((user) => res.send({ data: user }))
-    .catch(next);
+    .then((user) => res.status(201).send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Плохой запрос'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const getUserInfo = (req, res, next) => {

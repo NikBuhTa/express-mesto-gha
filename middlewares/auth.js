@@ -1,13 +1,20 @@
 const jwt = require('jsonwebtoken');
-const { secretKey } = require('../utils/utils');
+const { secretKey } = require('../utils/constants');
+const InvalidDataError = require('../errors/invalid-data-error');
 
 // eslint-disable-next-line consistent-return
 module.exports = (req, res, next) => {
   let payload;
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    next(new InvalidDataError('Неверный токен'));
+  }
+
   try {
-    payload = jwt.verify(req.cookies.jwt, secretKey);
+    payload = jwt.verify(token, secretKey);
   } catch (e) {
-    return res.send({ message: e.message });
+    next(e);
   }
   req.user = payload;
   next();
