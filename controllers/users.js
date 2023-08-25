@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users');
 const { secretKey } = require('../utils/constants');
-const NotFoundError = require('../errors/not-found-error');
+const { NotFoundError } = require('../errors/not-found-error');
 const { BadRequestError } = require('../errors/bad-request-error');
 const { DataConflictError } = require('../errors/data-conflict-error');
 
@@ -14,8 +14,7 @@ const getUsers = (req, res, next) => {
 };
 
 const getUser = (req, res, next) => {
-  console.log(req.params);
-  const { _id } = req.user;
+  const _id = req.params.id;
   User.findById(_id)
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
     .then((user) => res.status(200).send({ data: user }))
@@ -65,13 +64,12 @@ const createUser = (req, res, next) => {
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   const id = req.user._id;
-
   User.findByIdAndUpdate(id, { name, about }, {
     new: true,
     runValidators: true,
   })
     .orFail(() => { throw new NotFoundError('Пользователь не найден'); })
-    .then((user) => res.satuts(200).send({ data: user }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch(next);
 };
 
