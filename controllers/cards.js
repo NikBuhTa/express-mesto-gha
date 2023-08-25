@@ -1,3 +1,4 @@
+const { AccessDeniedError } = require('../errors/access-denied-error');
 const { NotFoundError } = require('../errors/not-found-error');
 const Card = require('../models/cards');
 
@@ -25,10 +26,17 @@ const createCard = (req, res, next) => {
 
 const deleteCard = (req, res, next) => {
   const id = req.params.cardId;
-  Card.findByIdAndRemove(id, { new: true })
+  Card.findById(id)
     .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
-    .then((card) => res.status(200).send({ data: card }))
-    .catch(next);
+    .then((c) => {
+      if (!(c.owner._id === req.user._id)) {
+        throw new AccessDeniedError('Вы не можете удалить не свою карточку!');
+      }
+      Card.findByIdAndRemove(id, { new: true })
+        .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
+        .then((card) => res.status(200).send({ data: card }))
+        .catch(next);
+    });
 };
 
 const likeCard = (req, res, next) => {
