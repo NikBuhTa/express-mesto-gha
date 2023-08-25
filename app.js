@@ -8,6 +8,7 @@ const { PORT = 3000 } = process.env;
 const routes = require('./routes/index');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { RegExp } = require('./utils/constants');
 
 const app = express();
 
@@ -27,7 +28,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().regex(RegExp),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),

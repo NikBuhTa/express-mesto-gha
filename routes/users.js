@@ -3,6 +3,7 @@ const express = require('express');
 const {
   getUsers, getUser, updateProfile, updateAvatar, getUserInfo,
 } = require('../controllers/users');
+const { RegExp } = require('../utils/constants');
 
 const userRouter = express.Router();
 
@@ -12,16 +13,16 @@ userRouter.get('/users/:id', celebrate({
     id: Joi.string().required().hex().length(24),
   }),
 }), getUser);
+userRouter.get('/users/me', getUserInfo);
 userRouter.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
   }),
 }), updateProfile);
-userRouter.get('/users/me', getUserInfo);
 userRouter.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required(),
+    avatar: Joi.string().required().regex(RegExp),
   }),
 }), updateAvatar);
 module.exports = userRouter;
