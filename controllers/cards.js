@@ -27,9 +27,11 @@ const createCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   const id = req.params.cardId;
   Card.findById(id)
+    .populate(['owner'])
     .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
     .then((c) => {
-      if (!(c.owner._id === req.user._id)) {
+      const ownerId = c.owner._id.toString().replace(/ObjectId\("(.*)"\)/, '$1');
+      if (!(ownerId === req.user._id)) {
         throw new AccessDeniedError('Вы не можете удалить не свою карточку!');
       }
       Card.findByIdAndRemove(id, { new: true })
@@ -38,6 +40,8 @@ const deleteCard = (req, res, next) => {
         .catch(next);
     });
 };
+//     });
+// };
 
 const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
