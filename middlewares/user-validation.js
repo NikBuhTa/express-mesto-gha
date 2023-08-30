@@ -1,13 +1,14 @@
 const { Joi, celebrate } = require('celebrate');
 const { RegExp } = require('../utils/constants');
 
-const loginValidator = () => {
+const loginValidator = (next) => {
   celebrate({
     body: Joi.object().keys({
       email: Joi.string().required().email(),
       password: Joi.string().required(),
     }),
   });
+  next();
 };
 
 const registrationValidator = () => {
