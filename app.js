@@ -27,7 +27,9 @@ app.use(routes);
 app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => handleErrors);
+app.use((err, req, res, next) => {
+  handleErrors(err, req, res, next);
+});
 
 app.listen(3000, () => {
   console.log('Server is up, PORT => ', PORT);
