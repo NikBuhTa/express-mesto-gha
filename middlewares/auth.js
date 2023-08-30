@@ -14,7 +14,7 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, secretKey);
   } catch (e) {
-    next(e);
+    next(new InvalidDataError('Неверный токен'));
   }
   req.user = payload;
   next();
