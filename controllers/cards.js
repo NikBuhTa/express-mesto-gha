@@ -45,7 +45,9 @@ const deleteCard = (req, res, next) => {
       if (!(ownerId === req.user._id)) {
         throw new AccessDeniedError('Вы не можете удалить не свою карточку!');
       }
-      Card.deleteOne(c);
+      Card.deleteOne(c)
+        .orFail(() => { throw new NotFoundError('Карточка не найдена'); })
+        .then((card) => res.status(200).send({ data: card }));
     })
     .catch((e) => {
       if (e.name === 'CastError') {
